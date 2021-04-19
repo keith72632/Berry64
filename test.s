@@ -2,6 +2,11 @@
 .section .text
 
 _start:
+    mov x8, #63
+    mov x0, #0
+    ldr x1, =message
+    mov x2, #14
+    svc 0
 
     mov x8, #64
     mov x0, #1
@@ -15,4 +20,4 @@ _start:
 
 .section .data
     message:
-        .ascii "hello, bitches\n" 
+        .ascii " " 

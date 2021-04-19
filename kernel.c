@@ -2,18 +2,13 @@
 #include "mbox.h"
 #include "rand.h"
 #include "delays.h"
+#include "lfb.h"
 
 void main()
 {
     // set up serial console
     uart_init();
-    uart_puts("if\n");
-    wait_cycles(100000000000000);
-    uart_puts("then\n");
-
-    uart_puts("before dealy\n");
-    wait_msec(1000000);
-    uart_puts("after delay\n");
+    lfb_init();
    
     
     // get the board's unique serial number with a mailbox call
@@ -37,6 +32,8 @@ void main()
     } else {
         uart_puts("Unable to query serial!\n");
     }
+
+    lfb_showpicture();
  
 
     // echo everything back
