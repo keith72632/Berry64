@@ -1,4 +1,6 @@
 #include "gpio.h"
+#include "mbox.h"
+#include "uart.h"
 
 /* mailbox message buffer */
 volatile unsigned int  __attribute__((aligned(16))) mbox[36];
@@ -15,20 +17,25 @@ volatile unsigned int  __attribute__((aligned(16))) mbox[36];
 #define MBOX_EMPTY      0x40000000
 
 /**
- * Make a mailbox call. Returns 0 on failure, non-zero on success
+ * Make a mailbox call
  */
 int mbox_call(unsigned char ch)
 {
+    mbox_status_t *statusReg = (mbox_status_t *)MBOX_STATUS; 
     unsigned int r = (((unsigned int)((unsigned long)&mbox)&~0xF) | (ch&0xF));
     /* wait until we can write to the mailbox */
-    do{asm volatile("nop");}while(*MBOX_STATUS & MBOX_FULL);
+    do{asm volatile("nop");}while(statusReg->write);
     /* write the address of our message to the mailbox with channel identifier */
+    if(statusReg->write == 0)
+        uart_puts("Write bit is empty\n");
     *MBOX_WRITE = r;
     /* now wait for the response */
     while(1) {
         /* is there a response? */
-        do{asm volatile("nop");}while(*MBOX_STATUS & MBOX_EMPTY);
+        do{asm volatile("nop");}while(statusReg->read);
         /* is it a response to our message? */
+        if(statusReg->read == 0)
+            uart_puts("read bit is full\n");
         if(r == *MBOX_READ)
             /* is it a valid successful response? */
             return mbox[1]==MBOX_RESPONSE;
