@@ -23,6 +23,12 @@ void rand_init()
 */
 unsigned int rand(unsigned int min, unsigned int max)
 {
+
+    *RNG_STATUS = 0x40000;
+    // maks interrupt
+    *RNG_INT_MASK |= 1;
+    // enable
+    *RNG_CTRL |= 1;
     //may need to wait for entropy. bits 24-31 store how many words are availabel for reaidng
     //require at least one
     while(!((*RNG_STATUS)>>24)) asm volatile("nop");

@@ -1,15 +1,20 @@
 #include "uart.h"
 #include "mbox.h"
 #include "rand.h"
+#include "delays.h"
 
 void main()
 {
     // set up serial console
     uart_init();
-    rand_init();
-    int x = rand(10, 100);
-    int y = 10;
-    int size = sizeof(y);
+    uart_puts("if\n");
+    wait_cycles(100000000000000);
+    uart_puts("then\n");
+
+    uart_puts("before dealy\n");
+    wait_msec(1000000);
+    uart_puts("after delay\n");
+   
     
     // get the board's unique serial number with a mailbox call
     mbox[0] = 8*4;                  // length of the message
@@ -32,8 +37,7 @@ void main()
     } else {
         uart_puts("Unable to query serial!\n");
     }
-    uart_puts("Size of int y: ");
-    uart_hex(y);
+ 
 
     // echo everything back
     while(1) {
