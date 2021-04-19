@@ -9,3 +9,7 @@ Bare Metal raspi3
 
 Bare Metal raspi4
     -MMIO_BASE is different than with a 3
+
+
+TODO
+    -switch to using stdint after GPU init
