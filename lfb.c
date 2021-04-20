@@ -1,5 +1,8 @@
 #include "uart.h"
 #include "mbox.h"
+#include "lfb.h"
+
+void draw_pixel(int x, int y, unsigned char attribute);
 
 /* PC Screen Font as used by Linux Console */
 typedef struct {
@@ -35,6 +38,25 @@ extern volatile unsigned char _binary_font_sfn_start;
 
 unsigned int width, height, pitch;
 unsigned char *lfb;
+
+unsigned int vgapal[] = {
+    0x000000, // black 
+    0x0000AA, // red
+    0x00AA00, // green
+    0x00AAAA, // baby shit
+    0xAA0000, // dark blue
+    0xAA00AA, // violet
+    0xAA5500, // blue
+    0xAAAAAA, // light gray
+    0x555555, // grey
+    0x5555FF, // peach
+    0x55FF55, // lime
+    0x55FFFF, // yellow 
+    0xFF5555, // purple
+    0xFF55FF, // pink
+    0xFFFF55, // sky
+    0xFFFFFF  // white
+};
 
 /**
  * Set screen resolution to 1024x768
@@ -94,6 +116,7 @@ void lfb_init()
     } else {
         uart_puts("Unable to set screen resolution to 1024x768x32\n");
     }
+
 }
 
 /**
@@ -118,7 +141,7 @@ void lfb_print(int x, int y, char *s)
         } else
         // new line
         if(*s == '\n') {
-            x = 0; y += font->height;
+            x = 20; y += font->height;
         } else {
             // display a character
             for(j=0;j<font->height;j++){
@@ -127,7 +150,7 @@ void lfb_print(int x, int y, char *s)
                 mask=1<<(font->width-1);
                 for(i=0;i<font->width;i++){
                     // if bit set, we use white color, otherwise black
-                    *((unsigned int*)(lfb + line))=((int)*glyph) & mask?0xFFFFFF:0;
+                    *((unsigned int*)(lfb + line))=((int)*glyph) & mask ? LIME :0;
                     mask>>=1;
                     line+=4;
                 }
@@ -198,3 +221,85 @@ void lfb_proprint(int x, int y, char *s)
         x += chr[4]+1; y += chr[5];
     }
 }
+
+void drawPixel(int x, int y, unsigned char attribute)
+{
+    pitch = mbox[33];
+    int offset = (y * pitch) + (x * 4);
+    *((unsigned int*)(lfb + offset)) = vgapal[attribute];
+}
+
+void drawLine(int x1, int y1, int x2, int y2, unsigned char attr)  
+{  
+    int dx, dy, p, x, y;
+
+    dx = x2-x1;
+    dy = y2-y1;
+    x = x1;
+    y = y1;
+    p = 2*dy-dx;
+
+    while (x<x2) {
+       if (p >= 0) {
+          drawPixel(x,y,attr);
+          y++;
+          p = p+2*dy-2*dx;
+       } else {
+          drawPixel(x,y,attr);
+          p = p+2*dy;
+       }
+       x++;
+    }
+}
+
+
+void drawRect(int x1, int y1, int x2, int y2, unsigned char attr, int fill)
+{
+    int y=y1;
+
+    while (y <= y2) {
+       int x=x1;
+       while (x <= x2) {
+	  if ((x == x1 || x == x2) || (y == y1 || y == y2)) drawPixel(x, y, attr);
+	  else if (fill) drawPixel(x, y, (attr & 0xf0) >> 4);
+          x++;
+       }
+       y++;
+    }
+}
+
+
+void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
+{
+    int x = radius;
+    int y = 0;
+    int err = 0;
+ 
+    while (x >= y) {
+	if (fill) {
+	   drawLine(x0 - y, y0 + x, x0 + y, y0 + x, (attr & 0xf0) >> 4);
+	   drawLine(x0 - x, y0 + y, x0 + x, y0 + y, (attr & 0xf0) >> 4);
+	   drawLine(x0 - x, y0 - y, x0 + x, y0 - y, (attr & 0xf0) >> 4);
+	   drawLine(x0 - y, y0 - x, x0 + y, y0 - x, (attr & 0xf0) >> 4);
+	}
+	drawPixel(x0 - y, y0 + x, attr);
+	drawPixel(x0 + y, y0 + x, attr);
+	drawPixel(x0 - x, y0 + y, attr);
+        drawPixel(x0 + x, y0 + y, attr);
+	drawPixel(x0 - x, y0 - y, attr);
+	drawPixel(x0 + x, y0 - y, attr);
+	drawPixel(x0 - y, y0 - x, attr);
+	drawPixel(x0 + y, y0 - x, attr);
+
+	if (err <= 0) {
+	    y += 1;
+	    err += 2*y + 1;
+	}
+ 
+	if (err > 0) {
+	    x -= 1;
+	    err -= 2*x + 1;
+	}
+    }
+}
+
