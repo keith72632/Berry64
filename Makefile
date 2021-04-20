@@ -16,11 +16,18 @@ boot.o: boot.S
 %.o: %.c
 	${CC} ${CC_FLAGS} -c $< -o $@
 
-kernel8.img: boot.o $(OBJS)
+font_psf.o: font.psf
+	${LINK} -r -b binary -o font_psf.o font.psf
+
+font_sfn.o: font.sfn
+	${LINK} -r -b binary -o font_sfn.o font.sfn
+
+kernel8.img: boot.o font_psf.o font_sfn.o $(OBJS)
 	$(LINK) -nostdlib -nostartfiles $^ -T link.ld -o kernel8.elf
 	$(OBJCPY) -O binary kernel8.elf kernel8.img
 
 run: kernel8.img
+	clear
 	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio
 
 test.o: test.s

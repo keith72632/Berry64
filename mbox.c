@@ -26,16 +26,13 @@ int mbox_call(unsigned char ch)
     /* wait until we can write to the mailbox */
     do{asm volatile("nop");}while(statusReg->write);
     /* write the address of our message to the mailbox with channel identifier */
-    if(statusReg->write == 0)
-        uart_puts("Write bit is empty\n");
     *MBOX_WRITE = r;
     /* now wait for the response */
     while(1) {
         /* is there a response? */
         do{asm volatile("nop");}while(statusReg->read);
         /* is it a response to our message? */
-        if(statusReg->read == 0)
-            uart_puts("read bit is full\n");
+
         if(r == *MBOX_READ)
             /* is it a valid successful response? */
             return mbox[1]==MBOX_RESPONSE;
