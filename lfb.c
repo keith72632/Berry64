@@ -1,6 +1,7 @@
 #include "uart.h"
 #include "mbox.h"
 #include "lfb.h"
+#include "terminal.h"
 
 void draw_pixel(int x, int y, unsigned char attribute);
 
@@ -39,38 +40,20 @@ extern volatile unsigned char _binary_font_sfn_start;
 unsigned int width, height, pitch;
 unsigned char *lfb;
 
-unsigned int vgapal[] = {
-    0x000000, // black 
-    0x0000AA, // red
-    0x00AA00, // green
-    0x00AAAA, // baby shit
-    0xAA0000, // dark blue
-    0xAA00AA, // violet
-    0xAA5500, // blue
-    0xAAAAAA, // light gray
-    0x555555, // grey
-    0x5555FF, // peach
-    0x55FF55, // lime
-    0x55FFFF, // yellow 
-    0xFF5555, // purple
-    0xFF55FF, // pink
-    0xFFFF55, // sky
-    0xFFFFFF  // white
-};
-
 /**
  * Set screen resolution to 1024x768
  */
 void lfb_init()
 {
+  
     mbox[0] = 35*4;
     mbox[1] = MBOX_REQUEST;
 
     mbox[2] = 0x48003;  //set phy wh
     mbox[3] = 8;
     mbox[4] = 8;
-    mbox[5] = 1280;         //FrameBufferInfo.width
-    mbox[6] = 720;          //FrameBufferInfo.height
+    mbox[5] = RES_WIDTH;         //FrameBufferInfo.width
+    mbox[6] = RES_HEIGHT;          //FrameBufferInfo.height
 
     mbox[7] = 0x48004;  //set virt wh
     mbox[8] = 8;
@@ -117,6 +100,13 @@ void lfb_init()
         uart_puts("Unable to set screen resolution to 1024x768x32\n");
     }
 
+    print_resolution(RES_WIDTH, RES_HEIGHT);
+    uart_puts("Pitch: ");
+    uart_hex(mbox[33]);
+    uart_puts("\n");
+    uart_puts("depth: ");
+    uart_hex(mbox[20]);
+    uart_puts("\n");
 }
 
 /**
@@ -150,7 +140,7 @@ void lfb_print(int x, int y, char *s)
                 mask=1<<(font->width-1);
                 for(i=0;i<font->width;i++){
                     // if bit set, we use white color, otherwise black
-                    *((unsigned int*)(lfb + line))=((int)*glyph) & mask ? LIME :0;
+                    *((unsigned int*)(lfb + line))=((int)*glyph) & mask ? RED :0;
                     mask>>=1;
                     line+=4;
                 }
@@ -206,15 +196,22 @@ void lfb_proprint(int x, int y, char *s)
         ptr = chr + 6; o = (unsigned long)lfb + y * pitch + x * 4;
         for(i = n = 0; i < chr[1]; i++, ptr += chr[0] & 0x40 ? 6 : 5) {
             if(ptr[0] == 255 && ptr[1] == 255) continue;
+
             frg = (unsigned char*)font + (chr[0] & 0x40 ? ((ptr[5] << 24) | (ptr[4] << 16) | (ptr[3] << 8) | ptr[2]) :
                 ((ptr[4] << 16) | (ptr[3] << 8) | ptr[2]));
+
             if((frg[0] & 0xE0) != 0x80) continue;
-            o += (int)(ptr[1] - n) * pitch; n = ptr[1];
-            k = ((frg[0] & 0x1F) + 1) << 3; j = frg[1] + 1; frg += 2;
+            o += (int)(ptr[1] - n) * pitch; 
+            n = ptr[1];
+            k = ((frg[0] & 0x1F) + 1) << 3; 
+            j = frg[1] + 1; frg += 2;
             for(m = 1; j; j--, n++, o += pitch)
                 for(p = o, l = 0; l < k; l++, p += 4, m <<= 1) {
-                    if(m > 0x80) { frg++; m = 1; }
-                    if(*frg & m) *((unsigned int*)p) = 0xFFFFFF;
+                    if(m > 0x80) 
+                        { frg++; m = 1; }
+
+                    if(*frg & m) 
+                        *((unsigned int*)p) = GREEN;
                 }
         }
         // add advances
@@ -300,6 +297,50 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
 	    x -= 1;
 	    err -= 2*x + 1;
 	}
+    }
+}
+
+void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
+{
+    unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
+
+    for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
+	for (int j=0;j<(FONT_WIDTH*zoom);j++) {
+	    unsigned char mask = 1 << (j/zoom);
+	    unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
+
+	    drawPixel(x+j, y+i, col);
+	}
+	glyph += (i%zoom) ? 0 : FONT_BPL;
+    }
+}
+
+void drawString(int x, int y, char *s, unsigned char attr, int zoom)
+{
+    while (*s) {
+       if (*s == '\r') {
+          x = 0;
+       } else if(*s == '\n') {
+          x = 0; y += (FONT_HEIGHT*zoom);
+       } else {
+	  drawChar(*s, x, y, attr, zoom);
+          x += (FONT_WIDTH*zoom);
+       }
+       s++;
+    }
+}
+
+void print_resolution(unsigned int width, unsigned int height)
+{
+    switch(width)
+    {
+        case 1280:
+            //lfb_print(20, 20, "Screen Resolution: 1280 x 720\n");
+            lfb_proprint(20, 20, "Screen Resolution: 1280 x 720\n");
+            break;
+        default:
+            lfb_print(20, 20, "Resolution Auto-Detect Failed\n");
+            break;
     }
 }
 

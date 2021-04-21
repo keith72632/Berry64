@@ -100,3 +100,4 @@ void uart_hex(unsigned int d) {
         uart_send(n);
     }
 }
+

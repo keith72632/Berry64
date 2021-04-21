@@ -1,4 +1,7 @@
 Tutorial Link: https://github.com/bztsrc/raspi3-tutorial
+               https://github.com/isometimes/rpi4-osdev
+               https://isometimes.github.io/rpi4-osdev/part5-framebuffer/
+               https://github.com/LdB-ECM/Raspberry-Pi
 
 Board Specs:
     -VideoCore GPU
