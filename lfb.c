@@ -2,6 +2,7 @@
 #include "mbox.h"
 #include "lfb.h"
 #include "terminal.h"
+#include "delays.h"
 
 void draw_pixel(int x, int y, unsigned char attribute);
 int string_len = 0;
@@ -320,6 +321,8 @@ void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
     }
 }
 
+
+
 void drawString(int x, int y, char *s, unsigned char attr, int zoom)
 {
     while (*s) {
@@ -335,6 +338,57 @@ void drawString(int x, int y, char *s, unsigned char attr, int zoom)
        s++;
     }
     uart_hex(string_len);
+}
+
+void drawBannerChar(unsigned char ch, int x, int y, unsigned char attr, int zoom, int milliseconds)
+{
+    unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
+
+    for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
+        for (int j=0;j<(FONT_WIDTH*zoom);j++) {
+            unsigned char mask = 1 << (j/zoom);
+            unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
+
+            wait_msec(milliseconds);
+            
+            drawPixel(x+j, y+i, col);
+        }
+	glyph += (i%zoom) ? 0 : FONT_BPL;
+    }
+}
+
+void drawBanner(int x, int y, char *s, unsigned char attr, int zoom, int milliseconds)
+{
+    while (*s) {
+       if (*s == '\r') {
+          x = 0;
+       } else if(*s == '\n') {
+          x = 0; y += (FONT_HEIGHT*zoom);
+       } else {
+	  drawBannerChar(*s, x, y, attr, zoom, milliseconds);
+          x += (FONT_WIDTH*zoom);
+          string_len += x;
+       }
+       s++;
+    }
+
+}
+
+void banner()
+{
+    drawCircle(640, 360, 50, RED, 1);
+    drawCircle(640, 360, 40, BLACK, 1);
+    drawCircle(640, 360, 30, RED, 1);
+    drawCircle(640, 360, 20, BLACK, 1);
+ 
+    drawBanner(450, 75, "Dingleberry OS", 0x02, 3, 200);
+
+    drawRect(400,50,825,125,0x02,0);
+    wait_msec(500000);
+    drawRect(400,50,825,125,0x00,0);
+    wait_msec(500000);
+    drawRect(400,50,825,125,0x02,0);
+    wait_msec(500000);
 }
 
 void print_resolution(unsigned int width, unsigned int height)

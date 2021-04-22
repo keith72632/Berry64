@@ -11,7 +11,9 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill);
 void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom);
 void print_resolution(unsigned int width, unsigned int height);
 void drawString(int x, int y, char *s, unsigned char attr, int zoom);
-
+void drawBannerChar(unsigned char ch, int x, int y, unsigned char attr, int zoom, int milliseconds);
+void drawBanner(int x, int y, char *s, unsigned char attr, int zoom, int milliseconds);
+void banner();
 
 typedef enum {
     BLACK = 0x000000, // black 

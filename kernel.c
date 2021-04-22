@@ -20,15 +20,9 @@ void main()
     lfb_init();
 
     // display an ASCII string on screen with PSF
-    //lfb_print(20, 20, "Screen Resolution: ");
-    drawCircle(640, 360, 50, RED, 1);
-    drawCircle(640, 360, 40, BLACK, 1);
-    drawCircle(640, 360, 30, RED, 1);
-    drawCircle(640, 360, 20, BLACK, 1);
- 
-    drawRect(400,50,825,125,0x02,0);
-//    drawRect(300,300,350,350,0x2e,1);
-    drawString(450, 75, "Dingleberry OS", 0x02, 3);
+
+    banner();
+
     // echo everything back
 
     //intitalize emmc and detect card type
