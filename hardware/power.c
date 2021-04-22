@@ -1,7 +1,7 @@
-#include "gpio.h"
-#include "mbox.h"
-#include "delays.h"
-#include "uart.h"
+#include "../includes/gpio.h"
+#include "../includes/mbox.h"
+#include "../includes/delays.h"
+#include "../includes/uart.h"
 
 #define PM_RSTC         ((volatile unsigned int*)(MMIO_BASE+0x0010001c))
 #define PM_RSTS         ((volatile unsigned int*)(MMIO_BASE+0x00100020))

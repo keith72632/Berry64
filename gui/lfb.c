@@ -1,8 +1,8 @@
-#include "uart.h"
-#include "mbox.h"
-#include "lfb.h"
-#include "terminal.h"
-#include "delays.h"
+#include "../includes/uart.h"
+#include "../includes/mbox.h"
+#include "../includes/lfb.h"
+#include "../includes/terminal.h"
+#include "../includes/delays.h"
 
 void draw_pixel(int x, int y, unsigned char attribute);
 int string_len = 0;
@@ -381,14 +381,14 @@ void banner()
     drawCircle(640, 360, 30, RED, 1);
     drawCircle(640, 360, 20, BLACK, 1);
  
-    drawBanner(450, 75, "Dingleberry OS", 0x02, 3, 200);
+    drawBanner(450, 75, "Dingleberry OS", 0x02, 3, 75);
 
     drawRect(400,50,825,125,0x02,0);
-    wait_msec(500000);
+    wait_msec(400000);
     drawRect(400,50,825,125,0x00,0);
-    wait_msec(500000);
+    wait_msec(400000);
     drawRect(400,50,825,125,0x02,0);
-    wait_msec(500000);
+    wait_msec(400000);
 }
 
 void print_resolution(unsigned int width, unsigned int height)

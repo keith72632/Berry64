@@ -1,7 +1,7 @@
-#include "gpio.h"
-#include "uart.h"
-#include "delays.h"
-#include "sd.h"
+#include "../includes/gpio.h"
+#include "../includes/uart.h"
+#include "../includes/delays.h"
+#include "../includes/sd.h"
 
 #define EMMC_ARG2           ((volatile unsigned int*)(MMIO_BASE+0x00300000))
 #define EMMC_BLKSIZECNT     ((volatile unsigned int*)(MMIO_BASE+0x00300004))

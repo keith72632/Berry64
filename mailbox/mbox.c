@@ -1,6 +1,6 @@
-#include "gpio.h"
-#include "mbox.h"
-#include "uart.h"
+#include "../includes/gpio.h"
+#include "../includes/mbox.h"
+#include "../includes/uart.h"
 
 /* mailbox message buffer */
 volatile unsigned int  __attribute__((aligned(16))) mbox[36];

@@ -4,13 +4,13 @@ AS = ~/Documents/Arch64CC/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf/bin/aarch
 LINK = ~/Documents/Arch64CC/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf/bin/aarch64-none-elf-ld
 OBJCPY = ~/Documents/Arch64CC/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf/bin/aarch64-none-elf-objcopy
 GDB = ~/Documents/Arch64CC/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf/bin/aarch64-none-elf-gdb
-HEADERS = $(wildcard *.h)
-SRCS = $(wildcard *.c)
+HEADERS = $(wildcard includes/*.h)
+SRCS = $(wildcard *.c kernel/*.c hardware/*.c gui/*.c storage/*.c common/*.c mailbox/*.c)
 OBJS = $(SRCS:.c=.o)
 
 all: run
 
-boot.o: boot.S
+boot.o: boot/boot.S
 	${CC} ${CC_FLAGS} -c $^ -o $@
 
 %.o: %.c
@@ -43,4 +43,4 @@ testDebug: test
 	${GDB} ./$@
 
 clean:
-	rm *.o *.elf *.img
+	rm *.o *.elf *.img kernel/*.o hardware/*.o boot/*.o common/*.o gui/*.o mailbox/*.o storage/*.o
