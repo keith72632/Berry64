@@ -28,7 +28,7 @@ kernel8.img: boot.o font_psf.o font_sfn.o $(OBJS)
 
 run: kernel8.img
 	clear
-	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio
+	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -drive file=test.dd,if=sd,format=raw -serial stdio
 
 test.o: test.s
 	${AS} $^ -o $@ -g

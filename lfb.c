@@ -4,6 +4,12 @@
 #include "terminal.h"
 
 void draw_pixel(int x, int y, unsigned char attribute);
+int string_len = 0;
+
+/*********************************************************
+ *                Complex GUI Functions                  *
+ *********************************************************/
+
 
 /* PC Screen Font as used by Linux Console */
 typedef struct {
@@ -101,12 +107,7 @@ void lfb_init()
     }
 
     print_resolution(RES_WIDTH, RES_HEIGHT);
-    uart_puts("Pitch: ");
-    uart_hex(mbox[33]);
-    uart_puts("\n");
-    uart_puts("depth: ");
-    uart_hex(mbox[20]);
-    uart_puts("\n");
+ 
 }
 
 /**
@@ -219,6 +220,10 @@ void lfb_proprint(int x, int y, char *s)
     }
 }
 
+/*********************************************************
+ *                Newer GUI Functions                    *
+ *********************************************************/
+
 void drawPixel(int x, int y, unsigned char attribute)
 {
     pitch = mbox[33];
@@ -305,12 +310,12 @@ void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
     unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
 
     for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
-	for (int j=0;j<(FONT_WIDTH*zoom);j++) {
-	    unsigned char mask = 1 << (j/zoom);
-	    unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
+        for (int j=0;j<(FONT_WIDTH*zoom);j++) {
+            unsigned char mask = 1 << (j/zoom);
+            unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
 
-	    drawPixel(x+j, y+i, col);
-	}
+            drawPixel(x+j, y+i, col);
+        }
 	glyph += (i%zoom) ? 0 : FONT_BPL;
     }
 }
@@ -325,9 +330,11 @@ void drawString(int x, int y, char *s, unsigned char attr, int zoom)
        } else {
 	  drawChar(*s, x, y, attr, zoom);
           x += (FONT_WIDTH*zoom);
+          string_len += x;
        }
        s++;
     }
+    uart_hex(string_len);
 }
 
 void print_resolution(unsigned int width, unsigned int height)

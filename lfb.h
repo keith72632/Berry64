@@ -13,7 +13,6 @@ void print_resolution(unsigned int width, unsigned int height);
 void drawString(int x, int y, char *s, unsigned char attr, int zoom);
 
 
-
 typedef enum {
     BLACK = 0x000000, // black 
     RED = 0x0000AA, // red

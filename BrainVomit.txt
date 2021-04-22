@@ -16,3 +16,4 @@ Bare Metal raspi4
 
 TODO
     -switch to using stdint after GPU init
+    -get string length from draw string to more easily center text
