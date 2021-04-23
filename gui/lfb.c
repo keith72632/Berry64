@@ -1,3 +1,4 @@
+#include "../includes/console.h"
 #include "../includes/uart.h"
 #include "../includes/mbox.h"
 #include "../includes/lfb.h"
@@ -104,7 +105,7 @@ void lfb_init()
         pitch=mbox[33];
         lfb=(void*)((unsigned long)mbox[28]);
     } else {
-        uart_puts("Unable to set screen resolution to 1024x768x32\n");
+        consoleError("Unable to set screen resolution to 1024x768x32\n");
     }
 
     print_resolution(RES_WIDTH, RES_HEIGHT);

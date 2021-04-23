@@ -12,6 +12,7 @@ Bare Metal raspi3
 
 Bare Metal raspi4
     -MMIO_BASE is different than with a 3
+    -change memoryInit to accept atags
 
 
 TODO

@@ -1,3 +1,4 @@
+#include "../includes/console.h"
 #include "../includes/gpio.h"
 #include "../includes/mbox.h"
 #include "../includes/delays.h"
@@ -76,11 +77,11 @@ void get_board_num()
 
     // send the message to the GPU and receive answer
     if (mbox_call(MBOX_CH_PROP)) {
-        uart_puts("My serial number is: ");
+        consolePrint("My serial number is: ");
         uart_hex(mbox[6]);
         uart_hex(mbox[5]);
         uart_puts("\n");
     } else {
-        uart_puts("Unable to query serial!\n");
+        consoleError("Unable to query serial!\n");
     }
 }
