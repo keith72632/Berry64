@@ -16,3 +16,11 @@ void consolePrint(char * string)
     uart_puts(string);
     uart_puts(KWHT);
 }
+
+void consoleText(char c)
+{
+    uart_puts(KGRN);
+    uart_puts("[+]");
+    uart_send(c);
+    uart_puts(KWHT);
+}

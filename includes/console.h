@@ -3,5 +3,6 @@
 
 void consoleError(char * string);
 void consolePrint(char * string);
+void consoleText(char c);
 
 #endif

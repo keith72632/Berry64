@@ -309,7 +309,7 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
 
 void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
 {
-    unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
+    unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG; //font[ch][FONT_BPG]
 
     for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
         for (int j=0;j<(FONT_WIDTH*zoom);j++) {
@@ -382,14 +382,21 @@ void banner()
     drawCircle(640, 360, 30, RED, 1);
     drawCircle(640, 360, 20, BLACK, 1);
  
-    drawBanner(450, 75, "Dingleberry OS", 0x02, 3, 75);
+    drawBanner(475, 75, "Dingleberry OS", 0x02, 3, 75);
 
-    drawRect(400,50,825,125,0x02,0);
+    drawRect(425,50,850,125,0x02,0);
     wait_msec(400000);
-    drawRect(400,50,825,125,0x00,0);
+    drawRect(425,50,850,125,0x00,0);
     wait_msec(400000);
-    drawRect(400,50,825,125,0x02,0);
+    drawRect(425,50,850,125,0x02,0);
     wait_msec(400000);
+
+    drawString(590, 500, "Press Any Key", 0x02, 1);
+}
+
+void clearScreen()
+{
+    
 }
 
 void print_resolution(unsigned int width, unsigned int height)

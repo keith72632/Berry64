@@ -4,6 +4,8 @@
 #include "../includes/delays.h"
 #include "../includes/sd.h"
 
+extern unsigned char _end;
+
 #define EMMC_ARG2           ((volatile unsigned int*)(MMIO_BASE+0x00300000))
 #define EMMC_BLKSIZECNT     ((volatile unsigned int*)(MMIO_BASE+0x00300004))
 #define EMMC_ARG1           ((volatile unsigned int*)(MMIO_BASE+0x00300008))
@@ -472,3 +474,21 @@ int sd_init()
     return SD_OK;
 }
 
+void initEMMC()
+{
+    if(sd_init() == SD_OK)
+    {
+        // read the master boot record after bss segment
+        if(sd_readblock(0, &_end, 1))
+        {
+            //dump to serial console
+            //uart_dump(&_end);
+            consolePrint("SD read successful\n");
+        }
+
+    } else if(sd_init() == SD_TIMEOUT) {
+        consoleError("Sd timeout\n");
+    } else if(sd_init() == SD_ERROR) {
+        consoleError("Sd error\n");
+    }
+}

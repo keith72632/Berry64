@@ -30,24 +30,11 @@ void main(int r0, int r1, int atags)
     mem_init(/*(atag_t *)atags*/);
 
     //intitalize emmc and detect card type
-    if(sd_init() == SD_OK)
-    {
-        // read the master boot record after bss segment
-        if(sd_readblock(0, &_end, 1))
-        {
-            //dump to serial console
-            //uart_dump(&_end);
-            consolePrint("SD read successful\n");
-        }
-
-    } else if(sd_init() == SD_TIMEOUT) {
-        uart_puts("Sd timeout\n");
-    } else if(sd_init() == SD_ERROR) {
-        uart_puts("Sd error\n");
-    }
+    initEMMC();
 
     while(1) {
-        uart_send(uart_getc());
+        uart_send(uart_getc());        
     }
 }
+
 

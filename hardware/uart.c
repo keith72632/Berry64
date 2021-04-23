@@ -1,3 +1,4 @@
+#include "../includes/console.h"
 #include "../includes/gpio.h"
 #include "../includes/mbox.h"
 
@@ -133,4 +134,13 @@ void uart_dump(void *ptr)
         uart_send('\r');
         uart_send('\n');
     }
+}
+
+unsigned char getUart()
+{
+    unsigned char c = 0;
+
+    c = uart_getc();
+
+    return c;
 }
