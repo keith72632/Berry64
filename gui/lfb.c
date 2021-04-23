@@ -1,3 +1,14 @@
+/*************************************************************************
+ *                          Frame Buffer Layout
+ *     __________________________________________________________________
+ *    |                                                                  |
+ *    |        <--------Pitch(how many pixels in row-)-------->          |  
+ *    --------------------------------------------------------------------
+ * Give Screen size to Framebuffer layout and it will return pitch and depth
+ * 1280 x 720, the pitch will 5120 (1280 * 4)
+ */
+
+
 #include "../includes/console.h"
 #include "../includes/uart.h"
 #include "../includes/mbox.h"
@@ -5,8 +16,7 @@
 #include "../includes/terminal.h"
 #include "../includes/delays.h"
 
-void draw_pixel(int x, int y, unsigned char attribute);
-int string_len = 0;
+
 
 /*********************************************************
  *                Complex GUI Functions                  *
@@ -109,6 +119,10 @@ void lfb_init()
     }
 
     print_resolution(RES_WIDTH, RES_HEIGHT);
+
+    consolePrint("Pitch: ");
+    uart_hex((mbox[33]));
+    consolePrint("\n");
  
 }
 
@@ -228,9 +242,16 @@ void lfb_proprint(int x, int y, char *s)
 
 void drawPixel(int x, int y, unsigned char attribute)
 {
+    //pitch == 0x1400 or 5120d
     pitch = mbox[33];
     int offset = (y * pitch) + (x * 4);
     *((unsigned int*)(lfb + offset)) = vgapal[attribute];
+}
+
+void testPixel(int offset)
+{
+    pitch = mbox[33];
+    *((unsigned int*)(lfb + offset)) = vgapal[0xf];
 }
 
 void drawLine(int x1, int y1, int x2, int y2, unsigned char attr)  
@@ -310,7 +331,9 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
 void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
 {
     unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG; //font[ch][FONT_BPG]
-
+    // consolePrint("Character Length is: ");
+    // uart_hex(charLen);
+    // consolePrint("\n");
     for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
         for (int j=0;j<(FONT_WIDTH*zoom);j++) {
             unsigned char mask = 1 << (j/zoom);
@@ -330,15 +353,15 @@ void drawString(int x, int y, char *s, unsigned char attr, int zoom)
        if (*s == '\r') {
           x = 0;
        } else if(*s == '\n') {
-          x = 0; y += (FONT_HEIGHT*zoom);
+          x = 0; 
+          y += (FONT_HEIGHT*zoom);
        } else {
 	  drawChar(*s, x, y, attr, zoom);
           x += (FONT_WIDTH*zoom);
-          string_len += x;
        }
        s++;
     }
-    uart_hex(string_len);
+ 
 }
 
 void drawBannerChar(unsigned char ch, int x, int y, unsigned char attr, int zoom, int milliseconds)
@@ -368,15 +391,30 @@ void drawBanner(int x, int y, char *s, unsigned char attr, int zoom, int millise
        } else {
 	  drawBannerChar(*s, x, y, attr, zoom, milliseconds);
           x += (FONT_WIDTH*zoom);
-          string_len += x;
        }
        s++;
     }
 
 }
 
+int fbStrLen(char * str, int zoom)
+{
+    int len;
+    while(*str)
+    {
+        if(*str != '\n' && *str != '\r')
+        {
+            len += (FONT_WIDTH * zoom);
+        }
+        str++;
+    }
+    return len;
+}
+
 void banner()
 {
+    char * anyKey = "Press Any Key";
+    int result;
     drawCircle(640, 360, 50, RED, 1);
     drawCircle(640, 360, 40, BLACK, 1);
     drawCircle(640, 360, 30, RED, 1);
@@ -391,12 +429,15 @@ void banner()
     drawRect(425,50,850,125,0x02,0);
     wait_msec(400000);
 
-    drawString(590, 500, "Press Any Key", 0x02, 1);
+    result = fbStrLen(anyKey, 1);
+    drawString(((RES_WIDTH / 2)-(result/2)), 500, anyKey, 0x02, 1);
 }
 
 void clearScreen()
 {
-    
+    for(int i = 0; i < 1280; i++)
+        for(int j = 0; j < 720; j++)
+            drawPixel(i, j, 0x00);
 }
 
 void print_resolution(unsigned int width, unsigned int height)

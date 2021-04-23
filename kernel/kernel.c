@@ -8,6 +8,9 @@
 #include "../includes/atags.h"
 #include "../includes/mem.h"
 #include "../includes/console.h"
+#include "../includes/homeScreen.h"
+
+#define ENTER 0x1C
 
 extern unsigned char _end;
 
@@ -24,13 +27,19 @@ void main(int r0, int r1, int atags)
     //set up framebuffer
     lfb_init();
 
-    // animated banner
-    banner();
-
     mem_init(/*(atag_t *)atags*/);
 
     //intitalize emmc and detect card type
     initEMMC();
+
+    // animated banner
+    banner();
+
+    //press any key
+    while(!uart_getc());
+
+    //home screen
+    homeScreenInit();
 
     while(1) {
         uart_send(uart_getc());        

@@ -1,5 +1,6 @@
 #define RES_WIDTH 1280
 #define RES_HEIGHT 720
+#define PIXEL_COUNT RES_WIDTH * 4
 
 void lfb_init();
 void lfb_print(int x, int y, char *s);
@@ -9,11 +10,14 @@ void drawLine(int x1, int y1, int x2, int y2, unsigned char attr);
 void drawRect(int x1, int y1, int x2, int y2, unsigned char attr, int fill);
 void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill);
 void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom);
+void drawString(int x, int y, char *s, unsigned char attr, int zoom);
 void print_resolution(unsigned int width, unsigned int height);
 void drawString(int x, int y, char *s, unsigned char attr, int zoom);
 void drawBannerChar(unsigned char ch, int x, int y, unsigned char attr, int zoom, int milliseconds);
 void drawBanner(int x, int y, char *s, unsigned char attr, int zoom, int milliseconds);
 void banner();
+void clearScreen();
+void testPixel(int offset);
 
 typedef enum {
     BLACK = 0x000000, // black 
