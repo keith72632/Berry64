@@ -45,6 +45,7 @@ void main(int r0, int r1, int atags)
     } else if(sd_init() == SD_ERROR) {
         uart_puts("Sd error\n");
     }
+
     while(1) {
         uart_send(uart_getc());
     }
