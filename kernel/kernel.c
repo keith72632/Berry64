@@ -21,6 +21,8 @@ void get_board_num();
 
 void main(int r0, int r1, int atags)
 {
+    int cursorPos = 0;
+
     // set up serial console
     uart_init();
 
@@ -41,8 +43,13 @@ void main(int r0, int r1, int atags)
     //home screen
     homeScreenInit();
 
+    
+
     while(1) {
-        uart_send(uart_getc());        
+        shell(cursorPos);
+        // while(!uart_getc());
+        // cursorPos += (8*ZOOM);
+        // wait_msec(1000);
     }
 }
 

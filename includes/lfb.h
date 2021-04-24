@@ -1,6 +1,7 @@
 #define RES_WIDTH 1280
 #define RES_HEIGHT 720
 #define PIXEL_COUNT RES_WIDTH * 4
+#define ZOOM 2
 
 void lfb_init();
 void lfb_print(int x, int y, char *s);
@@ -16,6 +17,7 @@ void drawString(int x, int y, char *s, unsigned char attr, int zoom);
 void drawBannerChar(unsigned char ch, int x, int y, unsigned char attr, int zoom, int milliseconds);
 void drawBanner(int x, int y, char *s, unsigned char attr, int zoom, int milliseconds);
 void banner();
+void cursor();
 void clearScreen();
 void testPixel(int offset);
 

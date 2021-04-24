@@ -1,19 +1,28 @@
 #include "../includes/lfb.h"
 #include "../includes/homeScreen.h"
+#include "../includes/delays.h"
+#include "../includes/uart.h"
 
 /**********************************************************
 *                   Private Functions                     *
 ***********************************************************/
-static void shellInit();
+
 /**********************************************************/
 
 void homeScreenInit()
 {
     clearScreen();
-    shellInit();
 }
 
-static void shellInit()
+void cursor(int pos)
 {
-    drawChar('X', (1280 /2), (720 / 2), 0x0f, 1);
+    drawRect(pos, 0, pos + (8 * ZOOM), (12 * ZOOM), 0x2e, 1);
+    wait_msec(4900);
+    drawRect(pos, 0, pos + (8 * ZOOM), (12 * ZOOM), 0x00, 1);
+    wait_msec(4900);
+}
+
+void shell(int cursorPos)
+{
+    cursor(cursorPos);
 }
