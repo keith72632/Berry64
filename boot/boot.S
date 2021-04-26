@@ -2,35 +2,117 @@
 //Tell OS to access stack 
 //Initialize BSS(area where unitialized varibales are store) to zero.
 //Jump to main() in C
-.section ".text.boot" // Make sure the linker puts this at the start of image
+.section ".text.boot" //make sure linker puts this at the start
 
-.global _start // Exectution starts here
+.global _start
 
 _start:
-    // Check processor ID is 0 (main core) or else hand
-    mrs    x1, mpidr_el1
-    and    x1, x1, #3
-    cbz    x1, 2f
-    //not in main core, so hang
-1: wfe
-    b    1b
+    // read cpu id, stop slave cores
+    mrs     x1, mpidr_el1
+    and     x1, x1, #3
+    cbz     x1, 2f
+    // cpu id > 0, stop
+1:  wfe
+    b       1b
+2:  // cpu id == 0
 
-2: // At the main core
-    
-    //set stack to start below code
-    ldr x1, =_start
-    mov sp, x1
+    // set stack before our code
+    ldr     x1, =_start
 
-    //clean BSS section
-    ldr    x1, =__bss_start   //start address
-    ldr    w2, =__bss_size    //size of section
-3:  cbz    w2, 4f             //quit loop if zero
-    str    xzr, [x1], #8
-    sub    w2, w2, #1
-    cbnz   w2, 3b            //loop if non-zero
+    // set up EL1
+    mrs     x0, CurrentEL
+    and     x0, x0, #12 // clear reserved bits
 
-    //Jump to main()
-4:  bl    main
+    // running at EL3?
+    cmp     x0, #12
+    bne     5f
+    // should never be executed, just for completeness
+    mov     x2, #0x5b1
+    msr     scr_el3, x2
+    mov     x2, #0x3c9
+    msr     spsr_el3, x2
+    adr     x2, 5f
+    msr     elr_el3, x2
+    eret
 
-    //incase it does return, halt core
-    b     1b
+    // running at EL2?
+5:  cmp     x0, #4
+    beq     5f
+    msr     sp_el1, x1
+    // enable CNTP for EL1
+    mrs     x0, cnthctl_el2
+    orr     x0, x0, #3
+    msr     cnthctl_el2, x0
+    msr     cntvoff_el2, xzr
+    // enable AArch64 in EL1
+    mov     x0, #(1 << 31)      // AArch64
+    orr     x0, x0, #(1 << 1)   // SWIO hardwired on Pi3
+    msr     hcr_el2, x0
+    mrs     x0, hcr_el2
+    // Setup SCTLR access
+    mov     x2, #0x0800
+    movk    x2, #0x30d0, lsl #16
+    msr     sctlr_el1, x2
+    // set up exception handlers
+    ldr     x2, =_vectors
+    msr     vbar_el1, x2
+    // change execution level to EL1
+    mov     x2, #0x3c4
+    msr     spsr_el2, x2
+    adr     x2, 5f
+    msr     elr_el2, x2
+    eret
+
+5:  mov     sp, x1
+
+    // clear bss
+    ldr     x1, =__bss_start
+    ldr     w2, =__bss_size
+3:  cbz     w2, 4f
+    str     xzr, [x1], #8
+    sub     w2, w2, #1
+    cbnz    w2, 3b
+
+    // jump to C code, should not return
+4:  bl      main
+    // for failsafe, halt this core too
+    b       1b
+
+    // important, code has to be properly aligned
+    .align 11
+_vectors:
+    // synchronous
+    .align  7
+    mov     x0, #0
+    mrs     x1, esr_el1
+    mrs     x2, elr_el1
+    mrs     x3, spsr_el1
+    mrs     x4, far_el1
+    b       exc_handler
+
+    // IRQ
+    .align  7
+    mov     x0, #1
+    mrs     x1, esr_el1
+    mrs     x2, elr_el1
+    mrs     x3, spsr_el1
+    mrs     x4, far_el1
+    b       exc_handler
+
+    // FIQ
+    .align  7
+    mov     x0, #2
+    mrs     x1, esr_el1
+    mrs     x2, elr_el1
+    mrs     x3, spsr_el1
+    mrs     x4, far_el1
+    b       exc_handler
+
+    // SError
+    .align  7
+    mov     x0, #3
+    mrs     x1, esr_el1
+    mrs     x2, elr_el1
+    mrs     x3, spsr_el1
+    mrs     x4, far_el1
+    b       exc_handler

@@ -21,7 +21,7 @@ void get_board_num();
 
 void main(int r0, int r1, int atags)
 {
-    int cursorPos = 0;
+    unsigned int r;
 
     // set up serial console
     uart_init();
@@ -39,6 +39,11 @@ void main(int r0, int r1, int atags)
 
     //press any key
     while(!uart_getc());
+    
+    // generate a Data Abort with a bad address access
+    r=*((volatile unsigned int*)0xFFFFFFFFFF000000);
+    // make gcc happy about unused variables :-)
+    r++;
 
     //home screen
     homeScreenInit();
@@ -46,7 +51,8 @@ void main(int r0, int r1, int atags)
     
 
     while(1) {
-        shell(cursorPos);
+        drawString(0, 0, "$>", 0x02, 1);
+        //shell(cursorPos);
         // while(!uart_getc());
         // cursorPos += (8*ZOOM);
         // wait_msec(1000);
